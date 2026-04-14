@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>QRlink — Free QR Generator</title>
+<title>QRlink — Premium QR Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
 <style>
 /* ─── Reset & Base ─── */
@@ -178,7 +178,6 @@ header{
   color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
   outline:none;transition:border-color var(--fast),box-shadow var(--fast);
   -webkit-appearance:none;
-  appearance:none;
 }
 .input::placeholder{color:var(--text3)}
 .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
@@ -214,7 +213,11 @@ header{
   gap:16px;
   align-items:start;
 }
-@media(max-width:600px){.single-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .single-grid{grid-template-columns:1fr}
+  .qr-preview-card{position:static;padding:14px;gap:12px}
+  .qr-canvas-wrap{max-width:min(260px,calc(100vw - 64px))}
+}
 
 /* ─── QR Preview Card ─── */
 .qr-preview-card{
@@ -223,26 +226,25 @@ header{
   display:flex;flex-direction:column;align-items:center;gap:16px;
   position:sticky;top:20px;
 }
-@media(max-width:600px){
-  .qr-preview-card{
-    position:static;padding:12px;margin-bottom:40px;
-  }
-}
 .qr-canvas-wrap{
-  width:100%;aspect-ratio:1;
+  /* Fluid: fills available width but never exceeds 300px,
+     and on tiny screens respects viewport with safe margin */
+  width:100%;
   max-width:min(300px, calc(100vw - 80px));
+  aspect-ratio:1;
   background:#fff;border-radius:14px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;position:relative;
   box-shadow:0 0 60px var(--accent-glow);
-  padding:20px;
+  align-self:center;
 }
-.qr-canvas-wrap canvas, .qr-canvas-wrap svg {
+/* The QR library renders a canvas/svg child — scale it to fit the wrapper */
+.qr-canvas-wrap > div,
+.qr-canvas-wrap canvas,
+.qr-canvas-wrap svg{
   width:100% !important;
   height:100% !important;
-}
-@media(max-width:600px){
-  .qr-canvas-wrap{max-width:min(260px, calc(100vw - 64px));margin:0 auto}
+  display:block;
 }
 .qr-placeholder{
   display:flex;flex-direction:column;align-items:center;gap:10px;
@@ -255,20 +257,17 @@ header{
   word-break:break-all;line-height:1.5;max-width:200px;
 }
 .export-row{display:flex;gap:8px;width:100%}
-@media(max-width:480px){
-  .export-row{flex-direction:column}
-}
 .export-row .btn{flex:1;font-size:12px;padding:9px 8px}
 
 /* ─── QR status bar ─── */
 .qr-status{
   display:flex;align-items:center;gap:8px;
-  padding:8px 12px;border-radius:100px;
+  padding:8px 12px;border-radius:10px;
   font-size:11px;font-weight:600;letter-spacing:0.3px;
-  transition:all var(--fast);
+  width:100%;
 }
 .qr-status.idle{background:var(--bg3);color:var(--text3)}
-.qr-status.ready{background:rgba(74,222,128,0.1);color:var(--green);border:1px solid rgba(74,222,128,0.2)}
+.qr-status.ready{background:rgba(74,222,128,0.1);color:var(--green)}
 .qr-status .mat-icon{font-size:14px}
 
 /* ─── Dot style pills ─── */
@@ -474,6 +473,7 @@ header{
       </div>
       <span class="logo-text">QR<span>link</span></span>
     </a>
+    <div class="header-badge">Premium</div>
   </header>
 
   <div class="app-body">
@@ -486,6 +486,17 @@ header{
       <button class="nav-item" id="sb-batch" onclick="setMode('batch')">
         <span class="mat-icon">layers</span> Batch
       </button>
+      <div class="sidebar-label">Info</div>
+      <div style="padding:0 20px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:700;letter-spacing:0.8px">SINGLE LIMIT</div>
+          <div style="font-size:15px;font-family:'Outfit',sans-serif;font-weight:800;color:var(--text)">1 QR</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:700;letter-spacing:0.8px">BATCH LIMIT</div>
+          <div style="font-size:15px;font-family:'Outfit',sans-serif;font-weight:800;color:var(--text)">50 URLs</div>
+        </div>
+      </div>
     </aside>
 
     <!-- ─ Main ─ -->
@@ -646,12 +657,13 @@ header{
         <!-- Batch Actions -->
         <div style="margin-top:14px">
           <!-- Format selector row -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
             <span style="font-size:11px;color:var(--text2);font-weight:500;white-space:nowrap">Export format:</span>
             <div style="display:flex;gap:6px" id="b-fmt-pills">
               <button class="dot-pill active" data-fmt="png" onclick="setBatchFmt(this,'png')">PNG</button>
               <button class="dot-pill" data-fmt="svg" onclick="setBatchFmt(this,'svg')">SVG</button>
             </div>
+            <span style="font-size:10px;color:var(--text3);margin-left:auto">ZIP uses same format</span>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn btn-primary" style="flex:2" id="b-gen-btn" onclick="generateBatch()">
@@ -698,7 +710,6 @@ header{
 let mode = 'single';
 let sDotStyle = 'rounded';
 let bDotStyle = 'rounded';
-let batchFmt = 'png';
 let batchUrls = [];
 let sQR = null;           // QRCodeStyling instance for single
 let bQRObjs = [];         // Array of {instance, url} for batch
@@ -714,15 +725,6 @@ function setMode(m) {
     if(sb) sb.classList.toggle('active', v === m);
     if(mn) mn.classList.toggle('active', v === m);
   });
-}
-
-// ─── Batch Format Selection ───
-function setBatchFmt(btn, fmt) {
-  batchFmt = fmt;
-  document.querySelectorAll('#b-fmt-pills .dot-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  // Update button labels in existing bento grid if any
-  document.querySelectorAll('.bento-dl').forEach(d => d.textContent = '↓ ' + fmt.toUpperCase());
 }
 
 // ─── Dot Style Pills ───
@@ -948,18 +950,18 @@ async function generateBatch() {
 
     const dlBtn = document.createElement('button');
     dlBtn.className = 'bento-dl';
-    dlBtn.textContent = '↓ ' + batchFmt.toUpperCase();
+    dlBtn.textContent = '↓ PNG';
 
     cell.appendChild(qrWrap);
     cell.appendChild(urlEl);
     cell.appendChild(dlBtn);
     grid.appendChild(cell);
 
-    // Display QR (small)
+    // Display QR (small, for preview)
     const displayQR = new QRCodeStyling(qrOpts(url, 104, fg, bg, bDotStyle));
     displayQR.append(displayDiv);
 
-    // Download QR (high-res) in offscreen
+    // Download QR (high-res, in offscreen)
     const dlDiv = document.createElement('div');
     offscreen.appendChild(dlDiv);
     const dlQR = new QRCodeStyling(qrOpts(url, 1500, fg, bg, bDotStyle));
@@ -967,19 +969,18 @@ async function generateBatch() {
 
     bQRObjs.push({ dlQR, url, dlDiv });
 
-    // Individual download override
+    // Per-item download button
     dlBtn.addEventListener('click', async () => {
-      const orig = dlBtn.textContent;
       dlBtn.textContent = '…';
       dlBtn.disabled = true;
       try {
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await dlQR.download({ name: 'qrlink-' + (i + 1), extension: batchFmt });
-        toast('Saved ' + batchFmt.toUpperCase(), 'ok');
+        await dlQR.download({ name: 'qrlink-' + (i + 1), extension: 'png' });
+        toast('Saved QR ' + (i + 1), 'ok');
       } catch(e) {
-        toast('Failed', 'err');
+        toast('Download failed', 'err');
       } finally {
-        dlBtn.textContent = orig;
+        dlBtn.textContent = '↓ PNG';
         dlBtn.disabled = false;
       }
     });
@@ -1017,9 +1018,9 @@ async function downloadZip() {
 
     for (let i = 0; i < bQRObjs.length; i++) {
       const { dlQR, url } = bQRObjs[i];
-      const blob = await dlQR.getRawData(batchFmt);
+      const blob = await dlQR.getRawData('png');
       const safeName = url.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
-      folder.file(`qrlink_${i + 1}_${safeName}.${batchFmt}`, blob);
+      folder.file(`qrlink_${i + 1}_${safeName}.png`, blob);
     }
 
     const content = await zip.generateAsync({ type: 'blob' });

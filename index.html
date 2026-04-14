@@ -222,12 +222,20 @@ header{
   display:flex;flex-direction:column;align-items:center;gap:16px;
   position:sticky;top:20px;
 }
+@media(max-width:768px){
+  .qr-preview-card{
+    position:static;padding:16px;margin-bottom:40px;
+  }
+}
 .qr-canvas-wrap{
   width:100%;aspect-ratio:1;
   background:#fff;border-radius:14px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;position:relative;
   box-shadow:0 0 60px var(--accent-glow);
+}
+@media(max-width:480px){
+  .qr-canvas-wrap{max-width:260px;margin:0 auto}
 }
 .qr-placeholder{
   display:flex;flex-direction:column;align-items:center;gap:10px;
@@ -240,17 +248,20 @@ header{
   word-break:break-all;line-height:1.5;max-width:200px;
 }
 .export-row{display:flex;gap:8px;width:100%}
+@media(max-width:480px){
+  .export-row{flex-direction:column}
+}
 .export-row .btn{flex:1;font-size:12px;padding:9px 8px}
 
 /* ─── QR status bar ─── */
 .qr-status{
   display:flex;align-items:center;gap:8px;
-  padding:8px 12px;border-radius:10px;
+  padding:8px 12px;border-radius:100px;
   font-size:11px;font-weight:600;letter-spacing:0.3px;
-  width:100%;
+  transition:all var(--fast);
 }
 .qr-status.idle{background:var(--bg3);color:var(--text3)}
-.qr-status.ready{background:rgba(74,222,128,0.1);color:var(--green)}
+.qr-status.ready{background:rgba(74,222,128,0.1);color:var(--green);border:1px solid rgba(74,222,128,0.2)}
 .qr-status .mat-icon{font-size:14px}
 
 /* ─── Dot style pills ─── */

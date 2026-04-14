@@ -84,10 +84,9 @@ No complex installation required—just a modern web browser.
 - [x] **Vector Support**: High-resolution SVG export for professional design.
 - [ ] **PWA Integration**: Offline support and app-like installation.
 - [ ] **Logo Overlays**: Support for custom branding inside the QR code center.
-- [ ] **Custom Shapes**: Support for non-standard QR shapes and frames.
 
 ---
 
 <div align="center">
-  <p>Developed with ❤️ for the community by <b>QRlink Team</b></p>
+  <p>Developed with ❤️ for the community by <b>almuss</b></p>
 </div>

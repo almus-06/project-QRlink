@@ -1,44 +1,66 @@
-# QRlink - Premium Dual-Mode QR Generator
+# QRlink — Nexus Premium QR Generator
 
-**QRlink** is a high-end, mobile-first web application designed to generate stylish QR codes with a focus on aesthetics and efficiency. It offers a unique dual-mode experience, allowing users to switch between a focused single execution and a powerful batch processing system.
+![QRlink Banner](https://img.shields.io/badge/QRlink-NEXUS_Premium-8ff5ff?style=for-the-badge&logo=qr-code&logoColor=003f43)
+![License](https://img.shields.io/badge/Status-Stable-4ade80?style=for-the-badge)
+![Tech](https://img.shields.io/badge/Tech-Vanilla_JS-f1f5f9?style=for-the-badge)
 
-## ✨ Key Features
-
-### 🎯 Dual-Mode Architecture
-- **Single Mode**: A distraction-free, centered interface designed for creating individual QR codes with high-resolution previews.
-- **Batch Mode**: A high-productivity "Bento Grid" layout that allows generating up to **10 QR codes** simultaneously from a list of links.
-
-### 📥 Export Capabilities
-- **Individual Downloads**: Export as high-quality PNG or vector-based SVG.
-- **Batch Export**: Download all generated QR codes in a single **.ZIP** archive using integrated `JSZip` technology.
-
-### 🎨 Deep Customization
-- **Style Shapes**: Choose from various dot styles including *Rounded, Extra Rounded, Classy, Dots, and Square*.
-- **Color Control**: Precision control over foreground (dots) and background colors with real-time updates across both modes.
-
-## 💎 Design Philosophy
-
-The design of QRlink focuses on a **Cyber-Premium** aesthetic, following these core principles:
-
-- **Bento Grid Layout**: Inspired by modern dashboard designs (like Apple or Linear), organizing complex batch features into clean, interactive "boxes".
-- **Glassmorphism**: Utilizing refined translucent layers, background blurs, and subtle border glares to create depth and a state-of-the-art feel.
-- **Fluid Motion**: Smooth fade transitions between Single and Batch modes, along with pop-in animations for generated results, ensuring a "living" UI.
-- **Mobile-First Responsiveness**: All layouts are strictly optimized for mobile devices, with tactile controls and adaptive grid stacking.
-
-## 🛠️ Technology Stack
-
-- **Core**: Vanilla HTML5, CSS3 (CS Variables), and Modern JavaScript (ES6+).
-- **QR Engine**: [qr-code-styling](https://github.com/kozak007/qr-code-styling) - for professional-grade rendering.
-- **Compression**: [JSZip](https://stuk.github.io/.jszip/) - for generating on-the-fly zip archives.
-- **File Handling**: [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - for robust browser download support.
-- **Typography**: Inter (UI) and Outfit (Branding) via Google Fonts.
-
-## 🚀 Getting Started
-
-1.  Clone or download this repository.
-2.  Open `index.html` in any modern web browser.
-3.  **Optionally**: Serve via a local server (e.g., `npx serve`) for the best experience with external libraries.
+**QRlink** adalah generator QR code berbasis web dengan desain **NEXUS Premium** yang minimalis, futuristik, dan sangat cepat. Dikembangkan khusus untuk kebutuhan personal maupun profesional dengan dukungan fitur pembuatan massal (Batch).
 
 ---
 
-Designed and developed with excellence for **QRlink**.
+## ✨ Features (NEXUS Update)
+
+### 🔵 Single Mode (Real-Time Generation)
+- **Instant Preview**: Lihat perubahan gaya secara langsung.
+- **Visual DNA**: Kustomisasi warna titik (dots), warna latar belakang, dan bentuk sudut (*Square*, *Rounded*, *Dots*, dll).
+- **Precision Export**: Unduh dalam format **PNG (2000x2000px)** untuk kualitas cetak atau **SVG** untuk kebutuhan desain vektor.
+
+### 🟣 Batch Processor (Bento Grid)
+- **High Capacity**: Masukkan hingga **50 URL** sekaligus.
+- **Bento Preview**: Lihat galeri QR code dalam tata letak kisi (*grid*) yang modern.
+- **ZIP Archive**: Unduh seluruh hasil pembuatan QR code dalam satu file kompresi `.zip` dengan sekali klik.
+
+### 🎨 Aesthetics & UX
+- **Cyber-Premium Design**: Dilengkapi efek *Animated Orbs*, *Noise Overlay*, dan *Glassmorphism*.
+- **Mobile Optimized**: Responsif penuh untuk perangkat mobile dengan *Bottom Navigation Bar*.
+- **Reliable Engine**: Menggunakan perbaikan logika ekspor untuk memastikan hasil download selalu siap tanpa error render.
+
+---
+
+## 🛠️ Technical Stack
+
+- **Core**: Vanilla JavaScript (ES6+), HTML5, CSS3.
+- **QR Engine**: [qr-code-styling](https://github.com/kozakdenyz/qr-code-styling).
+- **ZIP Logic**: [JSZip](https://stuk.github.io/jszip/).
+- **File Handling**: [FileSaver.js](https://github.com/eligrey/FileSaver.js/).
+- **Icons & Fonts**: Google Material Symbols & Google Fonts (Outfit, Inter).
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone & Open**:
+   ```bash
+   git clone https://github.com/almus-06/project-QRlink.git
+   cd project-QRlink
+   ```
+2. **Run Locally**:
+   Buka file `index.html` langsung di browser atau gunakan server lokal:
+   ```bash
+   # Contoh jika menggunakan npx
+   npx serve .
+   ```
+
+---
+
+## 📜 Roadmap & Status
+- [x] Dual-Mode Interface (Single & Batch)
+- [x] NEXUS Premium UI Overhaul
+- [x] ZIP Batch Export (Up to 50 URLs)
+- [x] SVG/PNG High-Res Support
+- [ ] PWA (Offline Support)
+- [ ] Custom Logo Overlay inside QR
+
+---
+
+*Developed with ❤️ by **QRlink Team***

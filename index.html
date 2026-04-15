@@ -304,6 +304,65 @@ header{
 }
 .color-label{font-size:11px;color:var(--text2)}
 
+/* ─── Logo Upload ─── */
+.logo-upload-zone{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:16px;border-radius:var(--radius);
+  border:2px dashed var(--border2);
+  background:var(--bg1);
+  cursor:pointer;transition:var(--fast) var(--easing);
+  position:relative;
+}
+.logo-upload-zone:hover{border-color:var(--accent);background:var(--accent-dim)}
+.logo-upload-zone.has-logo{border-style:solid;border-color:rgba(143,245,255,0.25);background:var(--bg1)}
+.logo-upload-zone input[type="file"]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+}
+.logo-preview-img{
+  width:56px;height:56px;border-radius:10px;
+  object-fit:contain;background:#fff;padding:4px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+}
+.logo-upload-hint{
+  font-size:11px;color:var(--text3);text-align:center;line-height:1.5;
+}
+.logo-upload-hint strong{color:var(--accent);font-weight:600}
+.logo-actions{display:flex;gap:6px;margin-top:4px}
+.logo-actions .btn{font-size:10px;padding:5px 10px}
+
+/* ─── Range slider ─── */
+.range-row{
+  display:flex;align-items:center;gap:10px;
+  margin-top:10px;
+}
+.range-row label{font-size:11px;color:var(--text2);white-space:nowrap;font-weight:500}
+.range-row input[type="range"]{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:4px;border-radius:4px;
+  background:var(--bg3);outline:none;
+}
+.range-row input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;
+  box-shadow:0 0 8px var(--accent-glow);
+}
+.range-row .range-val{
+  font-size:11px;color:var(--accent);font-weight:700;
+  min-width:32px;text-align:right;
+}
+
+/* ─── Checkbox toggle ─── */
+.toggle-row{
+  display:flex;align-items:center;gap:8px;
+  margin-top:10px;cursor:pointer;
+}
+.toggle-row input[type="checkbox"]{
+  width:16px;height:16px;accent-color:var(--accent);
+  cursor:pointer;
+}
+.toggle-row span{font-size:11px;color:var(--text2);font-weight:500}
+
 /* ─── Section divider ─── */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
@@ -540,6 +599,37 @@ header{
                   </div>
                 </div>
               </div>
+
+              <div class="divider"></div>
+
+              <!-- Logo Upload -->
+              <div>
+                <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:500">Center Logo</div>
+                <div class="logo-upload-zone" id="s-logo-zone">
+                  <input type="file" id="s-logo-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="handleLogoUpload('s', this.files[0])"/>
+                  <div id="s-logo-preview-wrap" style="display:none">
+                    <img id="s-logo-preview" class="logo-preview-img" alt="Logo preview"/>
+                  </div>
+                  <div id="s-logo-hint" class="logo-upload-hint">
+                    <span class="mat-icon" style="font-size:24px;color:var(--text3)">add_photo_alternate</span><br/>
+                    Click or drop image<br/><strong>PNG, JPG, SVG, WebP</strong>
+                  </div>
+                </div>
+                <div class="logo-actions" id="s-logo-actions" style="display:none">
+                  <button class="btn btn-ghost" onclick="removeLogo('s')">
+                    <span class="mat-icon" style="font-size:14px">delete</span> Remove
+                  </button>
+                </div>
+                <div class="range-row" id="s-logo-size-row" style="display:none">
+                  <label>Size</label>
+                  <input type="range" id="s-logo-size" min="0.08" max="0.35" step="0.01" value="0.18" oninput="onLogoSizeChange('s')"/>
+                  <span class="range-val" id="s-logo-size-val">18%</span>
+                </div>
+                <label class="toggle-row" id="s-hide-dots-row" style="display:none">
+                  <input type="checkbox" id="s-hide-dots" checked onchange="onHideDotsChange('s')"/>
+                  <span>Hide dots behind logo</span>
+                </label>
+              </div>
             </div>
 
             <!-- Actions -->
@@ -642,6 +732,37 @@ header{
               </div>
             </div>
           </div>
+
+          <div class="divider"></div>
+
+          <!-- Logo Upload for Batch -->
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:500">Center Logo</div>
+            <div class="logo-upload-zone" id="b-logo-zone">
+              <input type="file" id="b-logo-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="handleLogoUpload('b', this.files[0])"/>
+              <div id="b-logo-preview-wrap" style="display:none">
+                <img id="b-logo-preview" class="logo-preview-img" alt="Logo preview"/>
+              </div>
+              <div id="b-logo-hint" class="logo-upload-hint">
+                <span class="mat-icon" style="font-size:24px;color:var(--text3)">add_photo_alternate</span><br/>
+                Click or drop image<br/><strong>PNG, JPG, SVG, WebP</strong>
+              </div>
+            </div>
+            <div class="logo-actions" id="b-logo-actions" style="display:none">
+              <button class="btn btn-ghost" onclick="removeLogo('b')">
+                <span class="mat-icon" style="font-size:14px">delete</span> Remove
+              </button>
+            </div>
+            <div class="range-row" id="b-logo-size-row" style="display:none">
+              <label>Size</label>
+              <input type="range" id="b-logo-size" min="0.08" max="0.35" step="0.01" value="0.18" oninput="onLogoSizeChange('b')"/>
+              <span class="range-val" id="b-logo-size-val">18%</span>
+            </div>
+            <label class="toggle-row" id="b-hide-dots-row" style="display:none">
+              <input type="checkbox" id="b-hide-dots" checked onchange="onHideDotsChange('b')"/>
+              <span>Hide dots behind logo</span>
+            </label>
+          </div>
         </div>
 
         <!-- Batch Actions -->
@@ -705,6 +826,14 @@ let sQR = null;           // QRCodeStyling instance for single
 let bQRObjs = [];         // Array of {instance, url} for batch
 let sHasQR = false;
 
+// Logo state
+let sLogo = null;         // base64 data URL for single mode logo
+let bLogo = null;         // base64 data URL for batch mode logo
+let sLogoSize = 0.18;
+let bLogoSize = 0.18;
+let sHideDots = true;
+let bHideDots = true;
+
 // ─── Mode Switch ───
 function setMode(m) {
   mode = m;
@@ -753,17 +882,26 @@ document.querySelectorAll('.color-swatch').forEach(sw => {
 });
 
 // ─── QR Options Builder ───
-function qrOpts(url, size, fg, bg, style) {
-  return {
+function qrOpts(url, size, fg, bg, style, logoSrc, logoRatio, hideDots) {
+  const opts = {
     width: size, height: size,
     data: url,
     dotsOptions: { color: fg, type: style },
     backgroundOptions: { color: bg },
     cornersSquareOptions: { type: style === 'dots' ? 'dot' : 'square' },
     cornersDotOptions: { type: style === 'dots' ? 'dot' : 'square' },
-    qrOptions: { errorCorrectionLevel: 'M' },
-    imageOptions: { crossOrigin: 'anonymous' },
+    qrOptions: { errorCorrectionLevel: 'H' },
+    imageOptions: {
+      crossOrigin: 'anonymous',
+      hideBackgroundDots: hideDots !== false,
+      imageSize: logoRatio || 0.18,
+      margin: Math.round(size * 0.04),
+    },
   };
+  if (logoSrc) {
+    opts.image = logoSrc;
+  }
+  return opts;
 }
 
 // ─── Single Mode ───
@@ -773,7 +911,10 @@ function getSingleOpts(size) {
     size,
     document.getElementById('s-fg').value,
     document.getElementById('s-bg').value,
-    sDotStyle
+    sDotStyle,
+    sLogo,
+    sLogoSize,
+    sHideDots
   );
 }
 
@@ -838,12 +979,15 @@ async function dlSingle(ext) {
 
   try {
     // High-res QR for download (2000x2000)
-    const dlSize = ext === 'svg' ? 500 : 2000;
+    const dlSize = ext === 'svg' ? 500 : 2500;
     const dlQR = new QRCodeStyling(qrOpts(
       url, dlSize,
       document.getElementById('s-fg').value,
       document.getElementById('s-bg').value,
-      sDotStyle
+      sDotStyle,
+      sLogo,
+      sLogoSize,
+      sHideDots
     ));
 
     // Mount in hidden container so canvas renders
@@ -957,13 +1101,13 @@ async function generateBatch() {
     grid.appendChild(cell);
 
     // Display QR (small)
-    const displayQR = new QRCodeStyling(qrOpts(url, 104, fg, bg, bDotStyle));
+    const displayQR = new QRCodeStyling(qrOpts(url, 104, fg, bg, bDotStyle, bLogo, bLogoSize, bHideDots));
     displayQR.append(displayDiv);
 
     // Download QR (high-res) in offscreen
     const dlDiv = document.createElement('div');
     offscreen.appendChild(dlDiv);
-    const dlQR = new QRCodeStyling(qrOpts(url, 1500, fg, bg, bDotStyle));
+    const dlQR = new QRCodeStyling(qrOpts(url, 1500, fg, bg, bDotStyle, bLogo, bLogoSize, bHideDots));
     dlQR.append(dlDiv);
 
     bQRObjs.push({ dlQR, url, dlDiv });
@@ -1049,6 +1193,86 @@ function toast(msg, type) {
 document.getElementById('s-url').addEventListener('keydown', e => {
   if (e.key === 'Enter') generateSingle();
 });
+
+// ─── Logo Handling ───
+function handleLogoUpload(prefix, file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    toast('Please select an image file', 'err');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast('File too large (max 5MB)', 'err');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    if (prefix === 's') sLogo = dataUrl;
+    else bLogo = dataUrl;
+
+    // Update UI
+    const preview = document.getElementById(prefix + '-logo-preview');
+    const previewWrap = document.getElementById(prefix + '-logo-preview-wrap');
+    const hint = document.getElementById(prefix + '-logo-hint');
+    const actions = document.getElementById(prefix + '-logo-actions');
+    const zone = document.getElementById(prefix + '-logo-zone');
+    const sizeRow = document.getElementById(prefix + '-logo-size-row');
+    const hideDotsRow = document.getElementById(prefix + '-hide-dots-row');
+
+    preview.src = dataUrl;
+    previewWrap.style.display = 'block';
+    hint.innerHTML = '<span style="font-size:11px;color:var(--accent);font-weight:600">' + file.name + '</span>';
+    actions.style.display = 'flex';
+    zone.classList.add('has-logo');
+    sizeRow.style.display = 'flex';
+    hideDotsRow.style.display = 'flex';
+
+    // Re-generate if single mode already has a QR
+    if (prefix === 's' && sHasQR) regenSingle();
+
+    toast('Logo added!', 'ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo(prefix) {
+  if (prefix === 's') sLogo = null;
+  else bLogo = null;
+
+  const previewWrap = document.getElementById(prefix + '-logo-preview-wrap');
+  const hint = document.getElementById(prefix + '-logo-hint');
+  const actions = document.getElementById(prefix + '-logo-actions');
+  const zone = document.getElementById(prefix + '-logo-zone');
+  const sizeRow = document.getElementById(prefix + '-logo-size-row');
+  const hideDotsRow = document.getElementById(prefix + '-hide-dots-row');
+  const fileInput = document.getElementById(prefix + '-logo-input');
+
+  previewWrap.style.display = 'none';
+  hint.innerHTML = '<span class="mat-icon" style="font-size:24px;color:var(--text3)">add_photo_alternate</span><br/>Click or drop image<br/><strong>PNG, JPG, SVG, WebP</strong>';
+  actions.style.display = 'none';
+  zone.classList.remove('has-logo');
+  sizeRow.style.display = 'none';
+  hideDotsRow.style.display = 'none';
+  fileInput.value = '';
+
+  if (prefix === 's' && sHasQR) regenSingle();
+  toast('Logo removed', 'ok');
+}
+
+function onLogoSizeChange(prefix) {
+  const val = parseFloat(document.getElementById(prefix + '-logo-size').value);
+  document.getElementById(prefix + '-logo-size-val').textContent = Math.round(val * 100) + '%';
+  if (prefix === 's') { sLogoSize = val; if (sHasQR) regenSingle(); }
+  else { bLogoSize = val; }
+}
+
+function onHideDotsChange(prefix) {
+  const checked = document.getElementById(prefix + '-hide-dots').checked;
+  if (prefix === 's') { sHideDots = checked; if (sHasQR) regenSingle(); }
+  else { bHideDots = checked; }
+}
 </script>
 </body>
 </html>

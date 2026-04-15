@@ -672,16 +672,25 @@ header{
       <div class="view" id="view-batch">
         <div class="hero">
           <h2 class="hero-title">Batch <em>Processor</em></h2>
-          <p class="hero-sub">Add up to 50 URLs and export all QRs as a ZIP archive.</p>
+          <p class="hero-sub">Paste multiple URLs at once (one per line) or add them one by one — export all as a ZIP archive.</p>
         </div>
 
         <!-- Add URL row -->
         <div class="card">
-          <div class="card-label">Add URL</div>
-          <div class="input-row">
-            <input class="input" id="b-url-input" type="text" placeholder="https://example.com" onkeydown="if(event.key==='Enter')addBatchUrl()"/>
-            <button class="btn btn-primary" onclick="addBatchUrl()">
-              <span class="mat-icon">add</span>
+          <div class="card-label">Add URLs
+            <span style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0"> — paste one or many, one per line</span>
+          </div>
+          <div style="position:relative">
+            <textarea class="input" id="b-url-input"
+              rows="3"
+              placeholder="https://example.com&#10;https://another.com&#10;https://third.com"
+              style="resize:vertical;min-height:80px;line-height:1.6;font-size:13px"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addBatchUrl()}"
+            ></textarea>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="addBatchUrl()">
+              <span class="mat-icon">add</span> Add URLs
             </button>
           </div>
           <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -1023,15 +1032,39 @@ async function dlSingle(ext) {
 // ─── Batch Mode ───
 function addBatchUrl() {
   const input = document.getElementById('b-url-input');
-  const url = input.value.trim();
-  if (!url) return;
-  if (batchUrls.length >= 50) { toast('Max 50 URLs reached', 'err'); return; }
-  batchUrls.push(url);
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  // Split by newline or comma, filter empty entries
+  const lines = raw
+    .split(/[\n,]+/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const url of lines) {
+    if (batchUrls.length >= 50) { skipped += lines.length - added - skipped; break; }
+    if (batchUrls.includes(url)) { skipped++; continue; }
+    batchUrls.push(url);
+    added++;
+  }
+
   input.value = '';
   renderUrlList();
-  // Hide stale bento results
   document.getElementById('b-bento-wrap').style.display = 'none';
   document.getElementById('b-zip-btn').disabled = true;
+
+  if (added === 0 && skipped > 0) {
+    toast('All URLs already in list', 'err');
+  } else if (batchUrls.length >= 50) {
+    toast('Max 50 URLs reached', 'err');
+  } else if (skipped > 0) {
+    toast('Added ' + added + ' URL' + (added > 1 ? 's' : '') + ' (' + skipped + ' duplicate' + (skipped > 1 ? 's' : '') + ' skipped)', 'ok');
+  } else {
+    toast('Added ' + added + ' URL' + (added > 1 ? 's' : ''), 'ok');
+  }
 }
 
 function removeUrl(i) {

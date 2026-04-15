@@ -460,6 +460,28 @@ header{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ─── Progress bar ─── */
+.gen-progress{
+  margin-top:10px;display:none;
+  flex-direction:column;gap:6px;
+}
+.gen-progress.visible{display:flex}
+.progress-track{
+  height:4px;border-radius:4px;
+  background:var(--bg3);overflow:hidden;
+}
+.progress-fill{
+  height:100%;border-radius:4px;
+  background:var(--accent);
+  width:0%;transition:width 0.2s var(--easing);
+  box-shadow:0 0 8px var(--accent-glow);
+}
+.progress-label{
+  font-size:10px;color:var(--text2);
+  display:flex;justify-content:space-between;
+}
+.progress-label span{color:var(--accent);font-weight:700}
+
 /* ─── Toast ─── */
 .toast{
   position:fixed;bottom:80px;left:50%;
@@ -792,6 +814,13 @@ header{
               <span class="mat-icon">folder_zip</span> Download ZIP
             </button>
           </div>
+          <div class="gen-progress" id="b-progress">
+            <div class="progress-track"><div class="progress-fill" id="b-progress-fill"></div></div>
+            <div class="progress-label">
+              <span id="b-progress-text">Generating…</span>
+              <span id="b-progress-pct">0%</span>
+            </div>
+          </div>
         </div>
 
         <!-- Bento results -->
@@ -1102,27 +1131,62 @@ async function generateBatch() {
   if (batchUrls.length === 0) { toast('Add URLs first', 'err'); return; }
 
   const btn = document.getElementById('b-gen-btn');
+  const zipBtn = document.getElementById('b-zip-btn');
+  const progressWrap = document.getElementById('b-progress');
+  const progressFill = document.getElementById('b-progress-fill');
+  const progressText = document.getElementById('b-progress-text');
+  const progressPct = document.getElementById('b-progress-pct');
+  const grid = document.getElementById('b-bento-grid');
+
   btn.innerHTML = '<span class="spinner"></span> Generating…';
   btn.disabled = true;
+  zipBtn.disabled = true;
+  progressWrap.classList.add('visible');
+  progressFill.style.width = '0%';
+  progressText.textContent = 'Preparing…';
+  progressPct.textContent = '0%';
 
-  const fg = document.getElementById('b-fg').value;
-  const bg = document.getElementById('b-bg').value;
-  const grid = document.getElementById('b-bento-grid');
   grid.innerHTML = '';
   bQRObjs = [];
 
-  // Use hidden off-screen container for all batch instances
-  const offscreen = document.createElement('div');
-  offscreen.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none';
-  document.body.appendChild(offscreen);
+  const fg = document.getElementById('b-fg').value;
+  const bg = document.getElementById('b-bg').value;
+  const total = batchUrls.length;
 
-  for (let i = 0; i < batchUrls.length; i++) {
+  // Show grid container immediately so cells stream in
+  document.getElementById('b-bento-wrap').style.display = 'block';
+
+  // Helper: wait for QRCodeStyling to paint a canvas/svg inside a container
+  function waitForRender(container, timeoutMs = 5000) {
+    return new Promise((resolve) => {
+      const deadline = Date.now() + timeoutMs;
+      function check() {
+        const el = container.querySelector('canvas, svg');
+        if (el) { resolve(); return; }
+        if (Date.now() > deadline) { resolve(); return; }
+        requestAnimationFrame(check);
+      }
+      check();
+    });
+  }
+
+  // Store batch config so downloads use the same settings
+  const batchConfig = { fg, bg, dotStyle: bDotStyle, logo: bLogo, logoSize: bLogoSize, hideDots: bHideDots };
+
+  for (let i = 0; i < total; i++) {
     const url = batchUrls[i];
 
-    // Display cell
+    // Update progress
+    const pct = Math.round((i / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressPct.textContent = pct + '%';
+    progressText.textContent = 'Generating ' + (i + 1) + ' / ' + total + '…';
+
+    // ── Build display cell ──
     const cell = document.createElement('div');
     cell.className = 'bento-cell';
-    cell.style.animationDelay = (i * 0.04) + 's';
+    cell.style.opacity = '0.4';
+    cell.style.transition = 'opacity 0.3s';
 
     const qrWrap = document.createElement('div');
     qrWrap.className = 'bento-qr';
@@ -1135,33 +1199,43 @@ async function generateBatch() {
 
     const dlBtn = document.createElement('button');
     dlBtn.className = 'bento-dl';
-    dlBtn.textContent = '↓ ' + batchFmt.toUpperCase();
+    dlBtn.textContent = '⏳';
+    dlBtn.disabled = true;
 
     cell.appendChild(qrWrap);
     cell.appendChild(urlEl);
     cell.appendChild(dlBtn);
     grid.appendChild(cell);
 
-    // Display QR (small)
+    // ── Render PREVIEW only (small 104px) — fast! ──
     const displayQR = new QRCodeStyling(qrOpts(url, 104, fg, bg, bDotStyle, bLogo, bLogoSize, bHideDots));
     displayQR.append(displayDiv);
+    await waitForRender(displayDiv);
 
-    // Download QR (high-res) in offscreen
-    const dlDiv = document.createElement('div');
-    offscreen.appendChild(dlDiv);
-    const dlQR = new QRCodeStyling(qrOpts(url, 1500, fg, bg, bDotStyle, bLogo, bLogoSize, bHideDots));
-    dlQR.append(dlDiv);
+    // Store URL & config for deferred high-res rendering
+    bQRObjs.push({ url, index: i });
 
-    bQRObjs.push({ dlQR, url, dlDiv });
+    // ── Cell preview is ready ──
+    cell.style.opacity = '1';
+    dlBtn.textContent = '↓ ' + batchFmt.toUpperCase();
+    dlBtn.disabled = false;
 
-    // Individual download override
+    // Individual download — renders high-res just-in-time
+    const capturedIndex = i;
     dlBtn.addEventListener('click', async () => {
       const orig = dlBtn.textContent;
       dlBtn.textContent = '…';
       dlBtn.disabled = true;
       try {
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await dlQR.download({ name: 'qrlink-' + dateSuffix() + '-' + String(i + 1).padStart(3, '0'), extension: batchFmt });
+        // Create high-res QR on demand
+        const jitQR = new QRCodeStyling(qrOpts(url, 1500, batchConfig.fg, batchConfig.bg, batchConfig.dotStyle, batchConfig.logo, batchConfig.logoSize, batchConfig.hideDots));
+        const jitDiv = document.createElement('div');
+        jitDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none';
+        document.body.appendChild(jitDiv);
+        jitQR.append(jitDiv);
+        await waitForRender(jitDiv);
+        await jitQR.download({ name: 'qrlink-' + dateSuffix() + '-' + String(capturedIndex + 1).padStart(3, '0'), extension: batchFmt });
+        document.body.removeChild(jitDiv);
         toast('Saved ' + batchFmt.toUpperCase(), 'ok');
       } catch(e) {
         toast('Failed', 'err');
@@ -1170,47 +1244,111 @@ async function generateBatch() {
         dlBtn.disabled = false;
       }
     });
+
+    // Yield to browser every 5 items so UI stays responsive
+    if (i % 5 === 4) await new Promise(r => setTimeout(r, 0));
   }
 
-  // Wait for all canvases to settle
-  await new Promise(r => setTimeout(r, 400));
+  // All previews done
+  progressFill.style.width = '100%';
+  progressPct.textContent = '100%';
+  progressText.textContent = 'All ' + total + ' previews ready!';
 
-  document.getElementById('b-bento-wrap').style.display = 'block';
-  document.getElementById('b-zip-btn').disabled = false;
-
+  zipBtn.disabled = false;
   btn.innerHTML = '<span class="mat-icon">auto_awesome</span> Generate All';
   btn.disabled = false;
 
-  toast('Generated ' + batchUrls.length + ' QR codes', 'ok');
+  setTimeout(() => { progressWrap.classList.remove('visible'); }, 2500);
+  toast('All ' + total + ' QR previews generated!', 'ok');
 }
 
 /**
- * ZIP Download — same fix: use already-mounted dlQR instances
- * from the offscreen container, then get their raw data.
+ * ZIP Download — Just-in-time high-res rendering.
+ * Creates each 1500px QR on demand, gets its data, then discards it.
+ * Progress bar shows rendering + zipping progress.
  */
 async function downloadZip() {
   if (bQRObjs.length === 0) { toast('Generate QRs first', 'err'); return; }
 
   const btn = document.getElementById('b-zip-btn');
-  btn.innerHTML = '<span class="spinner"></span> Zipping…';
+  const genBtn = document.getElementById('b-gen-btn');
+  const progressWrap = document.getElementById('b-progress');
+  const progressFill = document.getElementById('b-progress-fill');
+  const progressText = document.getElementById('b-progress-text');
+  const progressPct = document.getElementById('b-progress-pct');
+
+  btn.innerHTML = '<span class="spinner"></span> Preparing…';
   btn.disabled = true;
+  genBtn.disabled = true;
+  progressWrap.classList.add('visible');
+  progressFill.style.width = '0%';
+
+  const fg = document.getElementById('b-fg').value;
+  const bg = document.getElementById('b-bg').value;
+  const total = bQRObjs.length;
+
+  // Helper: wait for QRCodeStyling to paint a canvas/svg
+  function waitForRender(container, timeoutMs = 8000) {
+    return new Promise((resolve) => {
+      const deadline = Date.now() + timeoutMs;
+      function check() {
+        const el = container.querySelector('canvas, svg');
+        if (el) { resolve(); return; }
+        if (Date.now() > deadline) { resolve(); return; }
+        requestAnimationFrame(check);
+      }
+      check();
+    });
+  }
 
   try {
     const zip = new JSZip();
     const folder = zip.folder('qrlink-batch');
 
-    // Extra tick so all canvases are definitely painted
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // Off-screen container for rendering
+    const offscreen = document.createElement('div');
+    offscreen.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none';
+    document.body.appendChild(offscreen);
 
-    for (let i = 0; i < bQRObjs.length; i++) {
-      const { dlQR, url } = bQRObjs[i];
+    for (let i = 0; i < total; i++) {
+      const { url } = bQRObjs[i];
+
+      progressText.textContent = 'Rendering QR ' + (i + 1) + ' / ' + total + '…';
+      const pct = Math.round((i / total) * 80); // 0-80% for rendering
+      progressFill.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
+
+      // Create high-res QR just-in-time
+      const dlDiv = document.createElement('div');
+      offscreen.appendChild(dlDiv);
+      const dlQR = new QRCodeStyling(qrOpts(url, 1500, fg, bg, bDotStyle, bLogo, bLogoSize, bHideDots));
+      dlQR.append(dlDiv);
+      await waitForRender(dlDiv);
+
       const blob = await dlQR.getRawData(batchFmt);
       const padNum = String(i + 1).padStart(3, '0');
-      folder.file(`qrlink-${dateSuffix()}-${padNum}.${batchFmt}`, blob);
+      folder.file('qrlink-' + dateSuffix() + '-' + padNum + '.' + batchFmt, blob);
+
+      // Cleanup rendered QR to free memory
+      offscreen.removeChild(dlDiv);
+
+      // Yield to browser
+      if (i % 3 === 2) await new Promise(r => setTimeout(r, 0));
     }
 
+    document.body.removeChild(offscreen);
+
+    progressText.textContent = 'Compressing ZIP…';
+    progressFill.style.width = '90%';
+    progressPct.textContent = '90%';
+
     const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, `qrlink-batch-${dateSuffix()}.zip`);
+
+    progressFill.style.width = '100%';
+    progressPct.textContent = '100%';
+    progressText.textContent = 'Done!';
+
+    saveAs(content, 'qrlink-batch-' + dateSuffix() + '.zip');
     toast('ZIP downloaded!', 'ok');
   } catch(e) {
     console.error('ZIP error:', e);
@@ -1218,6 +1356,8 @@ async function downloadZip() {
   } finally {
     btn.innerHTML = '<span class="mat-icon">folder_zip</span> Download ZIP';
     btn.disabled = false;
+    genBtn.disabled = false;
+    setTimeout(() => { progressWrap.classList.remove('visible'); }, 2500);
   }
 }
 

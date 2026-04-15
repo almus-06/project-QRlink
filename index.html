@@ -834,6 +834,15 @@ let bLogoSize = 0.18;
 let sHideDots = true;
 let bHideDots = true;
 
+// ─── Date Suffix (ddmmyy) ───
+function dateSuffix() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = String(d.getFullYear()).slice(-2);
+  return dd + mm + yy;
+}
+
 // ─── Mode Switch ───
 function setMode(m) {
   mode = m;
@@ -999,7 +1008,7 @@ async function dlSingle(ext) {
     // Give browser a tick to render
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    await dlQR.download({ name: 'qrlink', extension: ext });
+    await dlQR.download({ name: 'qrlink-' + dateSuffix(), extension: ext });
     document.body.removeChild(hidden);
     toast('Downloaded as ' + ext.toUpperCase(), 'ok');
   } catch(e) {
@@ -1119,7 +1128,7 @@ async function generateBatch() {
       dlBtn.disabled = true;
       try {
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await dlQR.download({ name: 'qrlink-' + (i + 1), extension: batchFmt });
+        await dlQR.download({ name: 'qrlink-' + dateSuffix() + '-' + String(i + 1).padStart(3, '0'), extension: batchFmt });
         toast('Saved ' + batchFmt.toUpperCase(), 'ok');
       } catch(e) {
         toast('Failed', 'err');
@@ -1163,12 +1172,12 @@ async function downloadZip() {
     for (let i = 0; i < bQRObjs.length; i++) {
       const { dlQR, url } = bQRObjs[i];
       const blob = await dlQR.getRawData(batchFmt);
-      const safeName = url.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
-      folder.file(`qrlink_${i + 1}_${safeName}.${batchFmt}`, blob);
+      const padNum = String(i + 1).padStart(3, '0');
+      folder.file(`qrlink-${dateSuffix()}-${padNum}.${batchFmt}`, blob);
     }
 
     const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, `qrlink-batch-${Date.now()}.zip`);
+    saveAs(content, `qrlink-batch-${dateSuffix()}.zip`);
     toast('ZIP downloaded!', 'ok');
   } catch(e) {
     console.error('ZIP error:', e);
